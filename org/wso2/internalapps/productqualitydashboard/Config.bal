@@ -24,4 +24,6 @@ const string GET_COMPONENT_OF_PRODUCT="SELECT pqd_component_id,sonar_project_key
 
 const string GET_COMPONENT_OF_AREA_PRODUCT = "SELECT pqd_component_id,pqd_component_name,sonar_project_key FROM pqd_component WHERE pqd_product_id=? and pqd_area_id=?";
 
+const string GET_COMPONENT_OF_AREA_PRODUCT_UNION = "select pqd_product_id as pqd_component_id, pqd_product_name as pqd_component_name ,sonar_project_key from pqd_product where pqd_area_id=? and pqd_product_id=? UNION SELECT pqd_component_id, pqd_component_name,sonar_project_key FROM pqd_component where pqd_area_id=? and pqd_product_id=?";
+
 const string GET_SELECTED_AREA="SELECT * FROM pqd_area WHERE pqd_area_id=?";
