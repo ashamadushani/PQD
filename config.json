@@ -1,0 +1,13 @@
+{
+  "githubAccessToken": "f6a7d52c219df069c0d09b5c5137ff045465e62d",
+  "jdbcUrl": "jdbc:mysql://localhost:3306/pqd_issues_sonar_db",
+  "SQLusername": "root",
+  "SQLpassword": "mysql",
+  "JIRAurl": "https://wso2.org/jira/",
+  "JIRAusername": "sajinie@wso2.com",
+  "JIRApassword": "",
+  "githubClientId":"9003c05dce028c5ed448",
+  "githubClientSecret":"b8910f3572c508dd2b396e422461f2e5d96abe5f",
+  "sonarUrl":"https://wso2.org/sonar",
+  "sonarAccessToken":"f83a37e2ee709f7f2dd55c7c311632fe309d14fd"
+}
