@@ -406,6 +406,16 @@ function getSelectionResult(string category,int area, int selected, int issueTyp
         }else{
             ret= getSelectedProductSonarIssuesForTypeAndSeverity(area,selected, issueType, severity);
         }
+    }else if(category=="component"){
+        if(issueType!=0 && severity==0){
+            ret= getSelectedProductSonarIssuesForType(area,selected,issueType);
+        }else if(severity!=0 && issueType==0){
+            ret= getSelectedProductSonarIssuesForSeverity(area,selected,severity);
+        }else if(issueType==0 && severity==0){
+            ret= getSelectedComponentSonarIssus(selected);
+        }else{
+            ret= getSelectedProductSonarIssuesForTypeAndSeverity(area,selected, issueType, severity);
+        }
     }
 
     return ret;
@@ -2037,6 +2047,7 @@ function getSelectedProductSonarIssues (int area,int selected)(json){
     params = [pqd_area_id_para,pqd_product_id_para, pqd_area_id_para,pqd_product_id_para];
     datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
+    boolean first_component_read=true;
     while (datatables:hasNext(cdt)) {
         int sonars=0;
         any row0 = datatables:next(cdt);
@@ -2071,7 +2082,10 @@ function getSelectedProductSonarIssues (int area,int selected)(json){
             sonars=sonars+tot;
         }
         datatables:close(idt);
-
+        if(first_component_read && selected!= 0 ){
+            component_id=component_id+10000;
+            first_component_read=false;
+        }
         json component_issues = {"name":component_name, "id":component_id, "issues":sonars};
         jsons:addToArray( allComponent, "$.items", component_issues);
     }
@@ -2124,6 +2138,7 @@ function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, 
     sql:Parameter pqd_area_id_para = {sqlType:"integer", value:area};
     sql:Parameter pqd_product_id_para = {sqlType:"integer", value:selected};
     params = [pqd_area_id_para,pqd_product_id_para,pqd_area_id_para,pqd_product_id_para];
+    boolean first_component_read=true;
     datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
     while (datatables:hasNext(cdt)) {
@@ -2186,6 +2201,10 @@ function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, 
         }
         datatables:close(idt);
 
+        if(first_component_read && selected!= 0 ){
+            component_id=component_id+10000;
+            first_component_read=false;
+        }
         json component_issues = {"name":component_name, "id":component_id, "issues":sonars};
         jsons:addToArray( allComponent, "$.items", component_issues);
     }
@@ -2227,6 +2246,7 @@ function getSelectedProductSonarIssuesForSeverity(int area,int selected, int sev
     params = [pqd_area_id_para,pqd_product_id_para, pqd_area_id_para,pqd_product_id_para];
     datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
+    boolean first_component_read=true;
     while (datatables:hasNext(cdt)) {
         int sonars=0;
         any row0 = datatables:next(cdt);
@@ -2282,7 +2302,10 @@ function getSelectedProductSonarIssuesForSeverity(int area,int selected, int sev
             sonars=sonars+tot;
         }
         datatables:close(idt);
-
+        if(first_component_read && selected!= 0 ){
+            component_id=component_id+10000;
+            first_component_read=false;
+        }
         json component_issues = {"name":component_name, "id":component_id, "issues":sonars};
         jsons:addToArray( allComponent, "$.items", component_issues);
     }
@@ -2333,6 +2356,7 @@ function getSelectedProductSonarIssuesForType(int area,int selected, int issueTy
     params = [pqd_area_id_para,pqd_product_id_para, pqd_area_id_para,pqd_product_id_para];
     datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
+    boolean first_component_read=true;
     while (datatables:hasNext(cdt)) {
         int sonars=0;
         any row0 = datatables:next(cdt);
@@ -2383,7 +2407,10 @@ function getSelectedProductSonarIssuesForType(int area,int selected, int issueTy
             sonars=sonars+tot;
         }
         datatables:close(idt);
-
+        if(first_component_read && selected!= 0 ){
+            component_id=component_id+10000;
+            first_component_read=false;
+        }
         json component_issues = {"name":component_name, "id":component_id, "issues":sonars};
         jsons:addToArray( allComponent, "$.items", component_issues);
     }
@@ -2391,6 +2418,114 @@ function getSelectedProductSonarIssuesForType(int area,int selected, int issueTy
 
 
     dbConnector.close();
+    json blocker = {"name":"BLOCKER", "id":1 ,"issues":BLOCKER};
+    jsons:addToArray( allComponent, "$.severity",blocker);
+    json critical = {"name":"CRITICAL", "id":2, "issues":CRITICAL};
+    jsons:addToArray( allComponent, "$.severity",critical);
+    json major = {"name":"MAJOR","id":3, "issues":MAJOR};
+    jsons:addToArray( allComponent, "$.severity",major);
+    json minor = {"name":"MINOR","id":4, "issues":MINOR};
+    jsons:addToArray( allComponent, "$.severity",minor);
+    json info = {"name":"INFO","id":5 , "issues":INFO};
+    jsons:addToArray( allComponent, "$.severity",info);
+
+    jsons:addToObject(data, "$", "data", allComponent);
+    return data;
+}
+
+function getSelectedComponentSonarIssus(int selected)(json){
+    json data = {"error":false};
+    json allComponent = {"issuetype":[], "severity":[]};
+
+    sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
+
+    sql:Parameter[] params = [];
+
+    datatable ssdt = sql:ClientConnector.select(dbConnector,GET_SNAPSHOT_ID,params);
+    Snapshots ss;
+    int snapshot_id;
+    errors:TypeCastError err;
+    while (datatables:hasNext(ssdt)) {
+        any row = datatables:next(ssdt);
+        ss, err = (Snapshots )row;
+
+        snapshot_id= ss.snapshot_id;
+
+    }
+    datatables:close(ssdt);
+
+    int BUGS=0;
+    int CODESMELLS=0;
+    int VULNERABILITIES=0;
+    int CRITICAL=0;
+    int BLOCKER=0;
+    int MAJOR=0;
+    int MINOR=0;
+    int INFO=0;
+
+    sql:Parameter pqd_selected_id_para={sqlType:"integer"};
+
+    string project_key;
+    if(selected > 10000){
+        selected=selected-10000;
+        pqd_selected_id_para={sqlType:"integer",value:selected};
+        params=[pqd_selected_id_para];
+        datatable pdt = sql:ClientConnector.select(dbConnector,GET_DETAILS_OF_PRODUCT, params);
+        Products pros;
+        while (datatables:hasNext(pdt)){
+            any row0 = datatables:next(pdt);
+            pros, err = (Products)row0;
+            project_key = pros.sonar_project_key;
+        }
+        datatables:close(pdt);
+    }else{
+        pqd_selected_id_para={sqlType:"integer",value:selected};
+        params=[pqd_selected_id_para];
+        datatable cdt = sql:ClientConnector.select(dbConnector,GET_DETAILS_OF_COMPONENT , params);
+        Components comps;
+        while (datatables:hasNext(cdt)){
+            any row0 = datatables:next(cdt);
+            comps, err = (Components)row0;
+            project_key = comps.sonar_project_key;
+        }
+        datatables:close(cdt);
+    }
+
+    sql:Parameter sonar_project_key_para = {sqlType:"varchar", value:project_key};
+    sql:Parameter snapshot_id_para= {sqlType:"integer", value:snapshot_id};
+    params = [sonar_project_key_para,snapshot_id_para];
+    datatable idt = sql:ClientConnector.select(dbConnector,GET_ALL_OF_SONAR_ISSUES, params);
+    SonarIssues si;
+    while (datatables:hasNext(idt)) {
+        any row2 = datatables:next(idt);
+        si, err = (SonarIssues )row2;
+
+        int bb = si.BLOCKER_BUG; int cb = si.CRITICAL_BUG; int mab = si.MAJOR_BUG; int mib = si.MINOR_BUG; int ib = si.INFO_BUG;
+        int bc = si.BLOCKER_CODE_SMELL; int cc = si.CRITICAL_CODE_SMELL;int mac = si.MAJOR_CODE_SMELL;int mic = si.MINOR_CODE_SMELL;int ic = si.INFO_CODE_SMELL;
+        int bv = si.BLOCKER_VULNERABILITY; int cv = si.CRITICAL_VULNERABILITY; int mav = si.MAJOR_VULNERABILITY; int miv = si.MINOR_VULNERABILITY;int iv = si.INFO_VULNERABILITY;
+        int tot = si.total;
+
+        BUGS= BUGS +bb+cb+mab+mib+ib;
+        CODESMELLS= CODESMELLS +bc+cc+mac+mic+ic;
+        VULNERABILITIES= VULNERABILITIES +bv+cv+mav+miv+iv;
+        BLOCKER = BLOCKER + bb+bc+bv;
+        CRITICAL = CRITICAL + cb+cc+cv;
+        MAJOR = MAJOR + mab+mac+mav;
+        MINOR = MINOR + mib+mic+miv;
+        INFO = INFO + ib+ic+iv;
+    }
+    datatables:close(idt);
+
+
+
+
+    dbConnector.close();
+    json bugs = {"name":"BUG","id":1, "issues":BUGS};
+    jsons:addToArray( allComponent, "$.issuetype",bugs );
+    json codesmells = {"name":"CODE SMELL","id":2, "issues":CODESMELLS};
+    jsons:addToArray( allComponent, "$.issuetype",codesmells );
+    json vulnerabilities = {"name":"VULNERABILITY","id":3, "issues":VULNERABILITIES};
+    jsons:addToArray( allComponent, "$.issuetype",vulnerabilities);
     json blocker = {"name":"BLOCKER", "id":1 ,"issues":BLOCKER};
     jsons:addToArray( allComponent, "$.severity",blocker);
     json critical = {"name":"CRITICAL", "id":2, "issues":CRITICAL};
