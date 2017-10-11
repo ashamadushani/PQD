@@ -2004,7 +2004,7 @@ function getSelectedAreaSonarIssuesForType(int selected, int issueType)(json){
 
 function getSelectedProductSonarIssues (int area,int selected)(json){
     json data = {"error":false};
-    json allComponent = {"name":"","items":[], "issuetype":[], "severity":[]};
+    json allComponent = {"items":[], "issuetype":[], "severity":[]};
 
     sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
 
@@ -2102,7 +2102,7 @@ function getSelectedProductSonarIssues (int area,int selected)(json){
 
 function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, int issueType, int severity)(json){
     json data = {"error":false};
-    json allComponent = {"name":"","items":[], "issuetype":[], "severity":[]};
+    json allComponent = {"items":[]};
 
     sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
 
@@ -2121,19 +2121,10 @@ function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, 
     }
     datatables:close(ssdt);
 
-    int BUGS=0;
-    int CODESMELLS=0;
-    int VULNERABILITIES=0;
-    int CRITICAL=0;
-    int BLOCKER=0;
-    int MAJOR=0;
-    int MINOR=0;
-    int INFO=0;
-
     sql:Parameter pqd_area_id_para = {sqlType:"integer", value:area};
     sql:Parameter pqd_product_id_para = {sqlType:"integer", value:selected};
-    params = [pqd_product_id_para, pqd_area_id_para];
-    datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT , params);
+    params = [pqd_area_id_para,pqd_product_id_para,pqd_area_id_para,pqd_product_id_para];
+    datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
     while (datatables:hasNext(cdt)) {
         int sonars=0;
@@ -2156,16 +2147,41 @@ function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, 
             int bb = si.BLOCKER_BUG; int cb = si.CRITICAL_BUG; int mab = si.MAJOR_BUG; int mib = si.MINOR_BUG; int ib = si.INFO_BUG;
             int bc = si.BLOCKER_CODE_SMELL; int cc = si.CRITICAL_CODE_SMELL;int mac = si.MAJOR_CODE_SMELL;int mic = si.MINOR_CODE_SMELL;int ic = si.INFO_CODE_SMELL;
             int bv = si.BLOCKER_VULNERABILITY; int cv = si.CRITICAL_VULNERABILITY; int mav = si.MAJOR_VULNERABILITY; int miv = si.MINOR_VULNERABILITY;int iv = si.INFO_VULNERABILITY;
-            int tot = si.total;
-
-            BUGS= BUGS +bb+cb+mab+mib+ib;
-            CODESMELLS= CODESMELLS +bc+cc+mac+mic+ic;
-            VULNERABILITIES= VULNERABILITIES +bv+cv+mav+miv+iv;
-            BLOCKER = BLOCKER + bb+bc+bv;
-            CRITICAL = CRITICAL + cb+cc+cv;
-            MAJOR = MAJOR + mab+mac+mav;
-            MINOR = MINOR + mib+mic+miv;
-            INFO = INFO + ib+ic+iv;
+            int tot=0;
+            if(severity==1 && issueType==1){
+                tot = bb;
+            }else if(severity==1 && issueType==2){
+                tot = bc;
+            }else if(severity==1 && issueType==3){
+                tot = bv;
+            }else if(severity==2 && issueType==1){
+                tot = cb;
+            }else if(severity==2 && issueType==2){
+                tot = cc;
+            }else if(severity==2 && issueType==3){
+                tot = cv;
+            }else if(severity==3 && issueType==1){
+                tot = mab;
+            }else if(severity==3 && issueType==2){
+                tot = mac;
+            }else if(severity==3 && issueType==3){
+                tot = mav;
+            }else if(severity==4 && issueType==1){
+                tot = mib;
+            }else if(severity==4 && issueType==2){
+                tot = mic;
+            }else if(severity==4 && issueType==3){
+                tot = miv;
+            }else if(severity==5 && issueType==1){
+                tot = ib;
+            }else if(severity==5 && issueType==2){
+                tot = ic;
+            }else if(severity==5 && issueType==3){
+                tot = iv;
+            }else{
+                jsons:set(data,"$.error",true);
+                return data;
+            }
             sonars=sonars+tot;
         }
         datatables:close(idt);
@@ -2175,24 +2191,7 @@ function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, 
     }
     datatables:close(cdt);
 
-
     dbConnector.close();
-    json bugs = {"name":"BUG","id":1, "issues":BUGS};
-    jsons:addToArray( allComponent, "$.issuetype",bugs );
-    json codesmells = {"name":"CODE SMELL","id":2, "issues":CODESMELLS};
-    jsons:addToArray( allComponent, "$.issuetype",codesmells );
-    json vulnerabilities = {"name":"VULNERABILITY","id":3, "issues":VULNERABILITIES};
-    jsons:addToArray( allComponent, "$.issuetype",vulnerabilities);
-    json blocker = {"name":"BLOCKER", "id":1 ,"issues":BLOCKER};
-    jsons:addToArray( allComponent, "$.severity",blocker);
-    json critical = {"name":"CRITICAL", "id":2, "issues":CRITICAL};
-    jsons:addToArray( allComponent, "$.severity",critical);
-    json major = {"name":"MAJOR","id":3, "issues":MAJOR};
-    jsons:addToArray( allComponent, "$.severity",major);
-    json minor = {"name":"MINOR","id":4, "issues":MINOR};
-    jsons:addToArray( allComponent, "$.severity",minor);
-    json info = {"name":"INFO","id":5 , "issues":INFO};
-    jsons:addToArray( allComponent, "$.severity",info);
 
     jsons:addToObject(data, "$", "data", allComponent);
     return data;
@@ -2200,7 +2199,7 @@ function getSelectedProductSonarIssuesForTypeAndSeverity(int area,int selected, 
 
 function getSelectedProductSonarIssuesForSeverity(int area,int selected, int severity)(json){
     json data = {"error":false};
-    json allComponent = {"name":"","items":[], "issuetype":[], "severity":[]};
+    json allComponent = {"items":[], "issuetype":[]};
 
     sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
 
@@ -2222,16 +2221,11 @@ function getSelectedProductSonarIssuesForSeverity(int area,int selected, int sev
     int BUGS=0;
     int CODESMELLS=0;
     int VULNERABILITIES=0;
-    int CRITICAL=0;
-    int BLOCKER=0;
-    int MAJOR=0;
-    int MINOR=0;
-    int INFO=0;
 
     sql:Parameter pqd_area_id_para = {sqlType:"integer", value:area};
     sql:Parameter pqd_product_id_para = {sqlType:"integer", value:selected};
-    params = [pqd_product_id_para, pqd_area_id_para];
-    datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT , params);
+    params = [pqd_area_id_para,pqd_product_id_para, pqd_area_id_para,pqd_product_id_para];
+    datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
     while (datatables:hasNext(cdt)) {
         int sonars=0;
@@ -2254,16 +2248,37 @@ function getSelectedProductSonarIssuesForSeverity(int area,int selected, int sev
             int bb = si.BLOCKER_BUG; int cb = si.CRITICAL_BUG; int mab = si.MAJOR_BUG; int mib = si.MINOR_BUG; int ib = si.INFO_BUG;
             int bc = si.BLOCKER_CODE_SMELL; int cc = si.CRITICAL_CODE_SMELL;int mac = si.MAJOR_CODE_SMELL;int mic = si.MINOR_CODE_SMELL;int ic = si.INFO_CODE_SMELL;
             int bv = si.BLOCKER_VULNERABILITY; int cv = si.CRITICAL_VULNERABILITY; int mav = si.MAJOR_VULNERABILITY; int miv = si.MINOR_VULNERABILITY;int iv = si.INFO_VULNERABILITY;
-            int tot = si.total;
+            int tot=0;
+            if(severity==1){
+                tot = bb+bc+bv;
+                BUGS= BUGS +bb;
+                CODESMELLS= CODESMELLS +bc;
+                VULNERABILITIES= VULNERABILITIES +bv;
+            }else if(severity==2){
+                tot = cb+cc+cv;
+                BUGS= BUGS +cb;
+                CODESMELLS= CODESMELLS +cc;
+                VULNERABILITIES= VULNERABILITIES +cv;
+            }else if(severity==3){
+                tot = mab+mac+mav;
+                BUGS= BUGS +mab;
+                CODESMELLS= CODESMELLS + mac;
+                VULNERABILITIES= VULNERABILITIES + mav;
+            }else if(severity==4){
+                tot = mib+mic+miv;
+                BUGS= BUGS +mib;
+                CODESMELLS= CODESMELLS + mic;
+                VULNERABILITIES= VULNERABILITIES + miv;
+            }else if(severity==5){
+                tot = ib+ic+iv;
+                BUGS= BUGS +ib;
+                CODESMELLS= CODESMELLS + ic;
+                VULNERABILITIES= VULNERABILITIES + iv;
+            }else{
+                jsons:set(data,"$.error",true);
+                return data;
+            }
 
-            BUGS= BUGS +bb+cb+mab+mib+ib;
-            CODESMELLS= CODESMELLS +bc+cc+mac+mic+ic;
-            VULNERABILITIES= VULNERABILITIES +bv+cv+mav+miv+iv;
-            BLOCKER = BLOCKER + bb+bc+bv;
-            CRITICAL = CRITICAL + cb+cc+cv;
-            MAJOR = MAJOR + mab+mac+mav;
-            MINOR = MINOR + mib+mic+miv;
-            INFO = INFO + ib+ic+iv;
             sonars=sonars+tot;
         }
         datatables:close(idt);
@@ -2273,24 +2288,14 @@ function getSelectedProductSonarIssuesForSeverity(int area,int selected, int sev
     }
     datatables:close(cdt);
 
-
     dbConnector.close();
+
     json bugs = {"name":"BUG","id":1, "issues":BUGS};
     jsons:addToArray( allComponent, "$.issuetype",bugs );
     json codesmells = {"name":"CODE SMELL","id":2, "issues":CODESMELLS};
     jsons:addToArray( allComponent, "$.issuetype",codesmells );
     json vulnerabilities = {"name":"VULNERABILITY","id":3, "issues":VULNERABILITIES};
     jsons:addToArray( allComponent, "$.issuetype",vulnerabilities);
-    json blocker = {"name":"BLOCKER", "id":1 ,"issues":BLOCKER};
-    jsons:addToArray( allComponent, "$.severity",blocker);
-    json critical = {"name":"CRITICAL", "id":2, "issues":CRITICAL};
-    jsons:addToArray( allComponent, "$.severity",critical);
-    json major = {"name":"MAJOR","id":3, "issues":MAJOR};
-    jsons:addToArray( allComponent, "$.severity",major);
-    json minor = {"name":"MINOR","id":4, "issues":MINOR};
-    jsons:addToArray( allComponent, "$.severity",minor);
-    json info = {"name":"INFO","id":5 , "issues":INFO};
-    jsons:addToArray( allComponent, "$.severity",info);
 
     jsons:addToObject(data, "$", "data", allComponent);
     return data;
@@ -2298,7 +2303,7 @@ function getSelectedProductSonarIssuesForSeverity(int area,int selected, int sev
 
 function getSelectedProductSonarIssuesForType(int area,int selected, int issueType)(json){
     json data = {"error":false};
-    json allComponent = {"name":"","items":[], "issuetype":[], "severity":[]};
+    json allComponent = {"items":[],"severity":[]};
 
     sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
 
@@ -2317,19 +2322,16 @@ function getSelectedProductSonarIssuesForType(int area,int selected, int issueTy
     }
     datatables:close(ssdt);
 
-    int BUGS=0;
-    int CODESMELLS=0;
-    int VULNERABILITIES=0;
-    int CRITICAL=0;
     int BLOCKER=0;
+    int CRITICAL=0;
     int MAJOR=0;
     int MINOR=0;
     int INFO=0;
 
     sql:Parameter pqd_area_id_para = {sqlType:"integer", value:area};
     sql:Parameter pqd_product_id_para = {sqlType:"integer", value:selected};
-    params = [pqd_product_id_para, pqd_area_id_para];
-    datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT , params);
+    params = [pqd_area_id_para,pqd_product_id_para, pqd_area_id_para,pqd_product_id_para];
+    datatable cdt = sql:ClientConnector.select(dbConnector,GET_COMPONENT_OF_AREA_PRODUCT_UNION , params);
     Components comps;
     while (datatables:hasNext(cdt)) {
         int sonars=0;
@@ -2352,16 +2354,32 @@ function getSelectedProductSonarIssuesForType(int area,int selected, int issueTy
             int bb = si.BLOCKER_BUG; int cb = si.CRITICAL_BUG; int mab = si.MAJOR_BUG; int mib = si.MINOR_BUG; int ib = si.INFO_BUG;
             int bc = si.BLOCKER_CODE_SMELL; int cc = si.CRITICAL_CODE_SMELL;int mac = si.MAJOR_CODE_SMELL;int mic = si.MINOR_CODE_SMELL;int ic = si.INFO_CODE_SMELL;
             int bv = si.BLOCKER_VULNERABILITY; int cv = si.CRITICAL_VULNERABILITY; int mav = si.MAJOR_VULNERABILITY; int miv = si.MINOR_VULNERABILITY;int iv = si.INFO_VULNERABILITY;
-            int tot = si.total;
-
-            BUGS= BUGS +bb+cb+mab+mib+ib;
-            CODESMELLS= CODESMELLS +bc+cc+mac+mic+ic;
-            VULNERABILITIES= VULNERABILITIES +bv+cv+mav+miv+iv;
-            BLOCKER = BLOCKER + bb+bc+bv;
-            CRITICAL = CRITICAL + cb+cc+cv;
-            MAJOR = MAJOR + mab+mac+mav;
-            MINOR = MINOR + mib+mic+miv;
-            INFO = INFO + ib+ic+iv;
+            int tot=0;
+            if(issueType==1){
+                tot=bb+cb+mab+mib+ib;
+                BLOCKER = BLOCKER + bb;
+                CRITICAL = CRITICAL + cb;
+                MAJOR = MAJOR + mab;
+                MINOR = MINOR + mib;
+                INFO = INFO + ib;
+            }else if(issueType==2){
+                tot=bc+cc+mac+mic+ic;
+                BLOCKER = BLOCKER + bc;
+                CRITICAL = CRITICAL + cc;
+                MAJOR = MAJOR + mac;
+                MINOR = MINOR + mic;
+                INFO = INFO + ic;
+            }else if(issueType==3){
+                tot=bv+cv+mav+miv+iv;
+                BLOCKER = BLOCKER + bv;
+                CRITICAL = CRITICAL + cv;
+                MAJOR = MAJOR + mav;
+                MINOR = MINOR + miv;
+                INFO = INFO + iv;
+            }else{
+                jsons:set(data,"$.error",true);
+                return data;
+            }
             sonars=sonars+tot;
         }
         datatables:close(idt);
@@ -2373,12 +2391,6 @@ function getSelectedProductSonarIssuesForType(int area,int selected, int issueTy
 
 
     dbConnector.close();
-    json bugs = {"name":"BUG","id":1, "issues":BUGS};
-    jsons:addToArray( allComponent, "$.issuetype",bugs );
-    json codesmells = {"name":"CODE SMELL","id":2, "issues":CODESMELLS};
-    jsons:addToArray( allComponent, "$.issuetype",codesmells );
-    json vulnerabilities = {"name":"VULNERABILITY","id":3, "issues":VULNERABILITIES};
-    jsons:addToArray( allComponent, "$.issuetype",vulnerabilities);
     json blocker = {"name":"BLOCKER", "id":1 ,"issues":BLOCKER};
     jsons:addToArray( allComponent, "$.severity",blocker);
     json critical = {"name":"CRITICAL", "id":2, "issues":CRITICAL};
