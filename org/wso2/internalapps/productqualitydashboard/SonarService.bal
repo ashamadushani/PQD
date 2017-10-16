@@ -32,6 +32,7 @@ struct Totals{
 struct SonarIssues{
     int sonar_component_issue_id;
     int snapshot_id;
+    string date;
     string project_key;
     int BLOCKER_BUG; int CRITICAL_BUG; int MAJOR_BUG; int MINOR_BUG; int INFO_BUG;
     int BLOCKER_CODE_SMELL; int CRITICAL_CODE_SMELL; int MAJOR_CODE_SMELL; int MINOR_CODE_SMELL; int INFO_CODE_SMELL;
@@ -78,7 +79,6 @@ service<http> SonarService {
 
         time:Time currentTime = time:currentTime();
         string customTimeString = time:format(currentTime, "yyyy-MM-dd--HH:mm:ss");
-
         json sonarPayload = {"Date":customTimeString, "TotalIssues":tot};
 
         messages:setJsonPayload(response, sonarPayload);
@@ -135,6 +135,22 @@ service<http> SonarService {
 
 }
 
+    @http:GET {}
+    @http:Path {value:"get-history/{start}/{end}/{period}/{category}/{selected}/{issueType}/{severity}"}
+    resource SonarGetHistory(message m, @http:PathParam {value:"start"} string start,
+                                        @http:PathParam {value:"end"} string end,
+                                        @http:PathParam {value:"period"} string period,
+                                        @http:PathParam {value:"category"} string category,
+                                        @http:PathParam {value:"selected"} int selected,
+                                        @http:PathParam {value:"issueType"} int issueType,
+                                        @http:PathParam {value:"severity"} int severity){
+        json data = getSelectionHistory(start,end,period,category,selected,issueType,severity);
+        message response = {};
+        messages:setJsonPayload(response,data);
+        messages:setHeader(response, "Access-Control-Allow-Origin", "*");
+        reply response;
+    }
+
 }
 
 function saveIssues (json projects)  {
@@ -149,7 +165,7 @@ function saveIssues (json projects)  {
         sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
         sql:Parameter[] params = [];
 
-        string customStartTimeString = time:format(time:currentTime(), "yyyy-MM-dd--HH:mm:ss");
+        string customStartTimeString = time:format(time:currentTime(), "yyyy-MM-dd");
         system:println("Start time: " + customStartTimeString);
 
         sql:Parameter todayDate = {sqlType:"varchar", value:customStartTimeString};
@@ -231,12 +247,12 @@ function saveIssues (json projects)  {
                 int total = jsons:getInt(sumaryofProjectJson, "$.Total");
                 sql:Parameter total1 = {sqlType:"integer", value:total};
 
-                params = [snapshotid, projectkey, bb1, cb1, mab1, mib1, ib1, bc1, cc1, mac1, mic1, ic1, bv1, cv1, mav1, miv1, iv1,total1];
+                params = [snapshotid, todayDate,projectkey, bb1, cb1, mab1, mib1, ib1, bc1, cc1, mac1, mic1, ic1, bv1, cv1, mav1, miv1, iv1,total1];
                 int ret1 = sql:ClientConnector.update(dbConnector, INSERT_SONAR_ISSUES, params);
                 i = i + 1;
             }
         }
-        string customEndTimeString = time:format(time:currentTime(), "yyyy-MM-dd--HH:mm:ss");
+        string customEndTimeString = time:format(time:currentTime(), "yyyy-MM-dd");
         system:println("End time: " + customEndTimeString);
         dbConnector.close();
     }
@@ -413,6 +429,55 @@ function getSelectionResult(string category,int selected, int issueType , int se
             ret= getSelectedComponentSonarIssues(selected);
         }else{
             ret= getSelectedComponentSonarIssuesForTypeAndSeverity(selected, issueType, severity);
+        }
+    }
+
+    return ret;
+}
+
+function getSelectionHistory(string start, string end, string period, string category,int selected, int issueType , int severity)(json){
+    json ret={};
+    system:println("Year|Quarter|Month|day");
+
+    if(period=="day" && category=="all"){
+        if(issueType!=0 && severity==0){
+            ret= getDailyHistoryAllAreaForType(start, end, issueType);
+        }else if(severity!=0 && issueType==0){
+            ret= getDailyHistoryAllAreaForSeverity(start,end,severity);
+        }else if(issueType==0 && severity==0){
+            ret= getDailyHistoryAllArea(start,end);
+        }else{
+            ret= getDailyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+        }
+    }else if(period=="Month" && category=="all"){
+        if(issueType!=0 && severity==0){
+            ret= getMonthlyHistoryAllAreaForType(start, end, issueType);
+        }else if(severity!=0 && issueType==0){
+            ret= getMonthlyHistoryAllAreaForSeverity(start,end,severity);
+        }else if(issueType==0 && severity==0){
+            ret= getMonthlyHistoryAllArea(start,end);
+        }else{
+            ret= getMonthlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+        }
+    }else if(period=="Quarter" && category=="all"){
+        if(issueType!=0 && severity==0){
+            ret= getQuarterlyHistoryAllAreaForType(start, end, issueType);
+        }else if(severity!=0 && issueType==0){
+            ret= getQuarterlyHistoryAllAreaForSeverity(start,end,severity);
+        }else if(issueType==0 && severity==0){
+            ret= getQuarterlyHistoryAllArea(start,end);
+        }else{
+            ret= getQuarterlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+        }
+    }else if(period=="Year" && category=="all"){
+        if(issueType!=0 && severity==0){
+            ret= getYearlyHistoryAllAreaForType(start, end, issueType);
+        }else if(severity!=0 && issueType==0){
+            ret= getYearlyHistoryAllAreaForSeverity(start,end,severity);
+        }else if(issueType==0 && severity==0){
+            ret= getYearlyHistoryAllArea(start,end);
+        }else{
+            ret= getYearlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
         }
     }
 
