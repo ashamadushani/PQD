@@ -437,47 +437,174 @@ function getSelectionResult(string category,int selected, int issueType , int se
 
 function getSelectionHistory(string start, string end, string period, string category,int selected, int issueType , int severity)(json){
     json ret={};
-    system:println("Year|Quarter|Month|day");
+    if(period=="day"){
+        if(category=="all"){
+            if(issueType!=0 && severity==0){
+                ret= getDailyHistoryAllAreaForType(start, end, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getDailyHistoryAllAreaForSeverity(start,end,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getDailyHistoryAllArea(start,end);
+            }else{
+                ret= getDailyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+            }
+        }else if(category=="area"){
+            if(issueType!=0 && severity==0){
+                ret= getDailyHistorySelectedAreaForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getDailyHistorySelectedAreaForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getDailyHistorySelectedArea(start,end,selected);
+            }else{
+                ret= getDailyHistorySelectedAreaForTypeAndSeverity(start, end, selected ,issueType, severity);
+            }
+        }else if(category=="product"){
+            if(issueType!=0 && severity==0){
+                ret= getDailyHistorySelectedProductForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getDailyHistorySelectedProductForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getDailyHistorySelectedProduct(start,end,selected);
+            }else{
+                ret= getDailyHistorySelectedProductForTypeAndSeverity(start, end, selected ,issueType, severity);
+            }
+        }else if(category=="component"){
+            if(issueType!=0 && severity==0){
+                ret= getDailyHistorySelectedComponentForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getDailyHistorySelectedComponentForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getDailyHistorySelectedComponent(start,end,selected);
+            }else{
+                ret= getDailyHistorySelectedComponentForTypeAndSeverity(start, end,  selected ,issueType, severity);
+            }
+        }
+    }else if(period=="Month"){
+        if(category=="all"){
+            if(issueType!=0 && severity==0){
+                ret= getMonthlyHistoryAllAreaForType(start, end, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getMonthlyHistoryAllAreaForSeverity(start,end,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getMonthlyHistoryAllArea(start,end);
+            }else{
+                ret= getMonthlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+            }
+        }else if(category=="area"){
+            if(issueType!=0 && severity==0){
+                ret= getMonthlyHistorySelectedAreaForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getMonthlyHistorySelectedAreaForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getMonthlyHistorySelectedArea(start,end,selected);
+            }else{
+                ret= getMonthlyHistorySelectedAreaForTypeAndSeverity(start, end,selected ,issueType, severity);
+            }
+        }else if(category=="product"){
+            if(issueType!=0 && severity==0){
+                ret= getMonthlyHistorySelectedProductForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getMonthlyHistorySelectedProductForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getMonthlyHistorySelectedProduct(start,end,selected);
+            }else{
+                ret= getMonthlyHistorySelectedProductForTypeAndSeverity(start, end,selected ,issueType, severity);
+            }
+        }else if(category=="component"){
+            if(issueType!=0 && severity==0){
+                ret= getMonthlyHistorySelectedComponentForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getMonthlyHistorySelectedComponentForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getMonthlyHistorySelectedComponent(start,end,selected);
+            }else{
+                ret= getMonthlyHistorySelectedComponentForTypeAndSeverity(start, end,selected ,issueType, severity);
+            }
+        }
+    }else if(period=="Quarter"){
+        if(category=="all"){
+            if(issueType!=0 && severity==0){
+                ret= getQuarterlyHistoryAllAreaForType(start, end, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getQuarterlyHistoryAllAreaForSeverity(start,end,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getQuarterlyHistoryAllArea(start,end);
+            }else{
+                ret= getQuarterlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+            }
+        }else if(category=="area"){
+            if(issueType!=0 && severity==0){
+                ret= getQuarterlyHistorySelectedAreaForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getQuarterlyHistorySelectedAreaForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getQuarterlyHistorySelectedArea(start,end,selected);
+            }else{
+                ret= getQuarterlyHistorySelectedAreaForTypeAndSeverity(start, end,selected ,issueType, severity);
+            }
+        }else if(category=="product"){
+            if(issueType!=0 && severity==0){
+                ret= getQuarterlyHistorySelectedProductForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getQuarterlyHistorySelectedProductForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getQuarterlyHistorySelectedProduct(start,end,selected);
+            }else{
+                ret= getQuarterlyHistorySelectedProductForTypeAndSeverity(start, end,selected ,issueType, severity);
+            }
+        }else if(category=="component"){
+            if(issueType!=0 && severity==0){
+                ret= getQuarterlyHistorySelectedComponentForType(start, end,selected, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getQuarterlyHistorySelectedComponentForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getQuarterlyHistorySelectedComponent(start,end,selected);
+            }else{
+                ret= getQuarterlyHistorySelectedComponentForTypeAndSeverity(start, end,selected ,issueType, severity);
+            }
+        }
 
-    if(period=="day" && category=="all"){
-        if(issueType!=0 && severity==0){
-            ret= getDailyHistoryAllAreaForType(start, end, issueType);
-        }else if(severity!=0 && issueType==0){
-            ret= getDailyHistoryAllAreaForSeverity(start,end,severity);
-        }else if(issueType==0 && severity==0){
-            ret= getDailyHistoryAllArea(start,end);
-        }else{
-            ret= getDailyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
-        }
-    }else if(period=="Month" && category=="all"){
-        if(issueType!=0 && severity==0){
-            ret= getMonthlyHistoryAllAreaForType(start, end, issueType);
-        }else if(severity!=0 && issueType==0){
-            ret= getMonthlyHistoryAllAreaForSeverity(start,end,severity);
-        }else if(issueType==0 && severity==0){
-            ret= getMonthlyHistoryAllArea(start,end);
-        }else{
-            ret= getMonthlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
-        }
-    }else if(period=="Quarter" && category=="all"){
-        if(issueType!=0 && severity==0){
-            ret= getQuarterlyHistoryAllAreaForType(start, end, issueType);
-        }else if(severity!=0 && issueType==0){
-            ret= getQuarterlyHistoryAllAreaForSeverity(start,end,severity);
-        }else if(issueType==0 && severity==0){
-            ret= getQuarterlyHistoryAllArea(start,end);
-        }else{
-            ret= getQuarterlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
-        }
-    }else if(period=="Year" && category=="all"){
-        if(issueType!=0 && severity==0){
-            ret= getYearlyHistoryAllAreaForType(start, end, issueType);
-        }else if(severity!=0 && issueType==0){
-            ret= getYearlyHistoryAllAreaForSeverity(start,end,severity);
-        }else if(issueType==0 && severity==0){
-            ret= getYearlyHistoryAllArea(start,end);
-        }else{
-            ret= getYearlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+    }else if(period=="Year"){
+        if(category=="all"){
+            if(issueType!=0 && severity==0){
+                ret= getYearlyHistoryAllAreaForType(start, end, issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getYearlyHistoryAllAreaForSeverity(start,end,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getYearlyHistoryAllArea(start,end);
+            }else{
+                ret= getYearlyHistoryAllAreaForTypeAndSeverity(start, end, issueType, severity);
+            }
+        }else if(category=="area"){
+            if(issueType!=0 && severity==0){
+                ret= getYearlyHistorySelectedAreaForType(start, end,selected ,issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getYearlyHistorySelectedAreaForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getYearlyHistorySelectedArea(start,end,selected);
+            }else{
+                ret= getYearlyHistorySelectedAreaForTypeAndSeverity(start, end,selected,issueType, severity);
+            }
+        }else if(category=="product"){
+            if(issueType!=0 && severity==0){
+                ret= getYearlyHistorySelectedProductForType(start, end,selected ,issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getYearlyHistorySelectedProductForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getYearlyHistorySelectedProduct(start,end,selected);
+            }else{
+                ret= getYearlyHistorySelectedProductForTypeAndSeverity(start, end,selected,issueType, severity);
+            }
+        }else if(category=="component"){
+            if(issueType!=0 && severity==0){
+                ret= getYearlyHistorySelectedComponentForType(start, end,selected ,issueType);
+            }else if(severity!=0 && issueType==0){
+                ret= getYearlyHistorySelectedComponentForSeverity(start,end,selected,severity);
+            }else if(issueType==0 && severity==0){
+                ret= getYearlyHistorySelectedComponent(start,end,selected);
+            }else{
+                ret= getYearlyHistorySelectedComponentForTypeAndSeverity(start, end,selected,issueType, severity);
+            }
         }
     }
 
@@ -930,7 +1057,7 @@ function getAllAreaSonarIssuesForType (int issueType) (json) {
 
 function getSelectedAreaSonarIssues (int selected) (json) {
     json data = {"error":false};
-    json allProducts = {"name":"","items":[], "issuetype":[], "severity":[]};
+    json allProducts = {"name":selected,"items":[], "issuetype":[], "severity":[]};
 
     sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
 
@@ -1037,7 +1164,7 @@ function getSelectedAreaSonarIssues (int selected) (json) {
 
 function getSelectedAreaSonarIssuesForTypeAndSeverity (int selected, int issueType, int severity) (json) {
     json data = {"error":false};
-    json allProducts = {"name":"","items":[]};
+    json allProducts = {"name":selected,"items":[]};
 
     sql:ClientConnector dbConnector = create sql:ClientConnector(propertiesMap);
 
