@@ -746,7 +746,6 @@ function getYearlyHistoryAllAreaForTypeAndSeverity (string start, string end, in
 }
 
 
-
 function getDailyHistorySelectedArea (string start, string end,int selected) (json) {
     json data = {"error":false,"data":[]};
     json allAreas = {"data":[]};
