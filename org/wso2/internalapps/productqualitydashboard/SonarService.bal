@@ -122,7 +122,7 @@ service<http> SonarService {
     }
 
     @http:GET {}
-    @http:Path {value:"/get-issues/{category}/{selected}/{issueType}/{severity}"}
+    @http:Path {value:"/get-issues/{category}/{selected}/{sonarIssuetype}/{sonarSeverity}"}
     resource SonarGetIssues (message m, @http:PathParam {value:"category"} string category,
                                         @http:PathParam {value:"selected"} int selected,
                                         @http:PathParam {value:"sonarIssuetype"} int issueType,
@@ -150,7 +150,7 @@ service<http> SonarService {
     }
 
     @http:GET {}
-    @http:Path {value:"get-history/{start}/{end}/{period}/{category}/{selected}/{issueType}/{severity}"}
+    @http:Path {value:"get-history/{start}/{end}/{period}/{category}/{selected}/{sonarIssuetype}/{sonarSeverity}"}
     resource SonarGetHistory(message m, @http:PathParam {value:"start"} string start,
                                         @http:PathParam {value:"end"} string end,
                                         @http:PathParam {value:"period"} string period,
