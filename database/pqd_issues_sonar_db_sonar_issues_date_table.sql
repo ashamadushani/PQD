@@ -28,7 +28,7 @@ CREATE TABLE `sonar_issues_date_table` (
   `snapshot_id` int(11) NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   PRIMARY KEY (`snapshot_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,7 +37,7 @@ CREATE TABLE `sonar_issues_date_table` (
 
 LOCK TABLES `sonar_issues_date_table` WRITE;
 /*!40000 ALTER TABLE `sonar_issues_date_table` DISABLE KEYS */;
-INSERT INTO `sonar_issues_date_table` VALUES (1,'2017-10-09'),(2,'2017-10-10'),(3,'2017-10-11'),(4,'2017-10-12'),(5,'2017-10-13'),(6,'2017-11-14'),(7,'2017-11-15'),(8,'2017-11-16'),(9,'2017-10-16');
+INSERT INTO `sonar_issues_date_table` VALUES (1,'2017-10-09'),(2,'2017-10-10'),(3,'2017-10-11'),(4,'2017-10-12'),(5,'2017-10-13'),(6,'2017-11-14'),(7,'2017-11-15'),(8,'2017-11-16'),(9,'2017-10-16'),(10,'2017-10-18');
 /*!40000 ALTER TABLE `sonar_issues_date_table` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-10-17 10:00:25
+-- Dump completed on 2017-10-18  9:24:21
