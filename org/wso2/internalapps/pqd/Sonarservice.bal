@@ -4783,25 +4783,26 @@ function saveIssues(sql:ClientConnector sqlCon,json projects,http:HttpClient son
         log:printInfo("Fetching data from sonar started at "+currentTime().format("yyyy-MM-dd--HH:mm:ss"));
         sql:Parameter todayDate = {sqlType:"varchar", value:customStartTimeString};
         params = [todayDate];
+
         int ret = insertDataIntodatabase(sqlCon, INSERT_SNAPSHOT_DETAILS , params);
+        if(ret!=0){
+            params=[];
+            datatable dt = getDataFromDatabase(sqlCon,  GET_SNAPSHOT_ID, params);
+            Snapshots ss;
+            int snapshot_id;
+            TypeCastError err;
+            while (dt.hasNext()) {
+                any row = dt.getNext();
+                ss, err = (Snapshots)row;
 
-        params=[];
-        datatable dt = getDataFromDatabase(sqlCon,  GET_SNAPSHOT_ID, params);
-        Snapshots ss;
-        int snapshot_id;
-        TypeCastError err;
-        while (dt.hasNext()) {
-            any row = dt.getNext();
-            ss, err = (Snapshots)row;
+                snapshot_id = ss.snapshot_id;
 
-            snapshot_id = ss.snapshot_id;
+            }
+            dt.close();
+            sql:Parameter snapshotid = {sqlType:"integer", value:snapshot_id};
+            int index=0;
 
-        }
-        dt.close();
-        sql:Parameter snapshotid = {sqlType:"integer", value:snapshot_id};
-        int index=0;
-
-        //transaction {
+            //transaction {
             while(index<lenghtOfProjectList){
                 var project_key,_=(string)projects[index].k;
                 sql:Parameter projectkey = {sqlType:"varchar", value:project_key};
@@ -4862,9 +4863,10 @@ function saveIssues(sql:ClientConnector sqlCon,json projects,http:HttpClient son
                 index=index+1;
             }
 
-        //}
-        string customEndTimeString = currentTime().format("yyyy-MM-dd--HH:mm:ss");
-        log:printInfo("Data fetching from sonar finished at " + customEndTimeString);
+            //}
+            string customEndTimeString = currentTime().format("yyyy-MM-dd--HH:mm:ss");
+            log:printInfo("Data fetching from sonar finished at " + customEndTimeString);
+        }      
     }
 }
 
@@ -4987,7 +4989,12 @@ function insertDataIntodatabase(sql:ClientConnector sqlCon, string sqlQuery, sql
         sqlCon;
     }
     log:printDebug("insertDataIntodatabase function got invoked for sqlQuery : " + sqlQuery);
-    int ret=sqlEndPoint.update(sqlQuery,paramsForQuery);
+    int ret=0;
+    try{
+        ret=sqlEndPoint.update(sqlQuery,paramsForQuery);
+    }catch(error err){
+        log:printError(err.msg);
+    }
     return ret;
 }
 
